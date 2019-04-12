@@ -4,7 +4,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.ClientData;
 import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.Id;
@@ -12,9 +11,6 @@ import pl.com.bottega.ecommerce.sales.domain.productscatalog.ProductData;
 import pl.com.bottega.ecommerce.sales.domain.productscatalog.ProductType;
 import pl.com.bottega.ecommerce.sharedkernel.Money;
 
-import static org.hamcrest.Matchers.empty;
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -34,21 +30,16 @@ public class BookKeeperTest {
         bookKeeper = new BookKeeper(invoiceFactory);
     }
 
-    @Mock TaxPolicy taxPolicy;
+    @Test public void invoiceRequestWithZeroPosition(){
+        TaxPolicy taxPolicy = mock(TaxPolicy.class);
+        when(taxPolicy.calculateTax(ProductType.STANDARD, new Money(3))).thenReturn(new Tax(new Money(0.23), "23%"));
 
-    @Test public void emptyInvoiceRequest(){
-        BookKeeper bookKeeper = new BookKeeper(invoiceFactory);
         Invoice invoice = bookKeeper.issuance(invoiceRequest, taxPolicy);
-        assertThat(invoice.getItems(), empty());
+
+        Assert.assertThat(invoice.getItems().size(), is(equalTo(0)));
     }
 
-    @Test public void emptyInvoiceRequestNoCallTaxPolicy(){
-        BookKeeper bookKeeper = new BookKeeper(invoiceFactory);
-        Invoice invoice = bookKeeper.issuance(invoiceRequest, taxPolicy);
-        verify(taxPolicy, times(0)).calculateTax(any(ProductType.class), any(Money.class));
-    }
-
-    @Test public void invoiceRequestWithOnePostition(){
+    @Test public void invoiceRequestWithOnePosition(){
         TaxPolicy taxPolicy = mock(TaxPolicy.class);
         when(taxPolicy.calculateTax(ProductType.STANDARD, new Money(3))).thenReturn(new Tax(new Money(0.23), "23%"));
 
@@ -63,5 +54,29 @@ public class BookKeeperTest {
         Assert.assertThat(invoice.getItems().size(), is(equalTo(1)));
     }
 
+    @Test public void invoiceRequestWithTwoPosition() {
+        Money money1 = new Money(3);
+        Money money2 = new Money(5);
+
+        TaxPolicy taxPolicy1 = mock(TaxPolicy.class);
+        when(taxPolicy1.calculateTax(ProductType.STANDARD, money1)).thenReturn(new Tax(new Money(0.23), "23%"));
+        when(taxPolicy1.calculateTax(ProductType.FOOD, money2)).thenReturn(new Tax(new Money(0.46), "46%"));
+
+        ProductData productData1 = mock(ProductData.class);
+        when(productData1.getType()).thenReturn(ProductType.STANDARD);
+
+        ProductData productData2 = mock(ProductData.class);
+        when(productData2.getType()).thenReturn(ProductType.FOOD);
+
+        RequestItem requestItem1 = new RequestItem(productData1, 5, new Money(3));
+        invoiceRequest.add(requestItem1);
+
+        RequestItem requestItem2 = new RequestItem(productData2, 2, new Money(5));
+        invoiceRequest.add(requestItem2);
+
+        Invoice invoice = bookKeeper.issuance(invoiceRequest, taxPolicy1);
+
+        Assert.assertThat(invoice.getItems().size(), is(equalTo(2)));
+    }
 
 }
