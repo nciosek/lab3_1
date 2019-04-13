@@ -1,6 +1,7 @@
 package pl.com.bottega.ecommerce.sales.application.api.handler;
 
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -69,4 +70,22 @@ public class AddProductCommandHandlerTest {
 
         verify(productRepository,times(3)).load(new Id("1"));
     }
+
+    @Test public void productIsAvaibleShouldReturnTrue(){
+        Assert.assertTrue(product.isAvailable());
+    }
+
+    @Test public void productIsAvaibleCalledOneTimesTest(){
+        addProductCommandHandler.handle(addProductCommand);
+
+        verify(product,times(1)).isAvailable();
+    }
+
+    @Test public void productIsAvaibleCalledTwoTimesTest(){
+        addProductCommandHandler.handle(addProductCommand);
+        addProductCommandHandler.handle(addProductCommand);
+
+        verify(product,times(2)).isAvailable();
+    }
+
 }
