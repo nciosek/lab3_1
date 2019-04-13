@@ -2,6 +2,8 @@ package pl.com.bottega.ecommerce.sales.application.api.handler;
 
 
 import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
 import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.Id;
 import pl.com.bottega.ecommerce.sales.application.api.command.AddProductCommand;
 import pl.com.bottega.ecommerce.sales.domain.client.Client;
@@ -14,8 +16,7 @@ import pl.com.bottega.ecommerce.sales.domain.reservation.ReservationRepository;
 import pl.com.bottega.ecommerce.system.application.SystemContext;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class AddProductCommandHandlerTest {
 
@@ -52,4 +53,20 @@ public class AddProductCommandHandlerTest {
         addProductCommandHandler = new AddProductCommandHandler(reservationRepository, productRepository, suggestionService, clientRepository, systemContext);
     }
 
+    @Test public void reservationRepositoryLoadShouldBeCalledTwoTimes() {
+        addProductCommandHandler.handle(addProductCommand);
+        addProductCommandHandler.handle(addProductCommand);
+
+        verify(reservationRepository, Mockito.times(2)).load(new Id("1"));
+    }
+
+    @Test public void productRepositoryLoadShouldBeCalledThreeTimesTest(){
+        addProductCommandHandler.handle(addProductCommand);
+        addProductCommandHandler.handle(addProductCommand);
+        addProductCommandHandler.handle(addProductCommand);
+
+        when(reservationRepository.load(new Id("1"))).thenReturn(reservation);
+
+        verify(productRepository,times(3)).load(new Id("1"));
+    }
 }
