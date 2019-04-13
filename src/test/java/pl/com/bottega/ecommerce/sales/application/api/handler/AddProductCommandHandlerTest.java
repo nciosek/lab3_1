@@ -88,4 +88,8 @@ public class AddProductCommandHandlerTest {
         verify(product,times(2)).isAvailable();
     }
 
+    @Test public void reservationRepositoryShouldReturnRepositoryWithIdOne(){
+        Assert.assertEquals(reservation,reservationRepository.load(new Id("1")));
+    }
+
 }
