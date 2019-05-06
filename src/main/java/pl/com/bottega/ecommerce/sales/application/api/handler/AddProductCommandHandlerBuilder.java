@@ -38,7 +38,7 @@ public class AddProductCommandHandlerBuilder {
         return this;
     }
 
-    public AddProductCommandHandler createAddProductCommandHandler() {
+    public AddProductCommandHandler build() {
         return new AddProductCommandHandler(reservationRepository, productRepository, suggestionService, clientRepository, systemContext);
     }
 

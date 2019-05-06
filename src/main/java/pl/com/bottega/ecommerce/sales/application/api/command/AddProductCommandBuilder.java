@@ -11,17 +11,17 @@ public class AddProductCommandBuilder {
     public AddProductCommandBuilder() {
     }
 
-    public AddProductCommandBuilder withOrderId(Id id){
+    public AddProductCommandBuilder setOrderId(Id id){
         this.orderId = id;
         return this;
     }
 
-    public AddProductCommandBuilder withProductId(Id id){
+    public AddProductCommandBuilder setProductId(Id id){
         this.productId = id;
         return this;
     }
 
-    public AddProductCommandBuilder withQuantity(int quantity){
+    public AddProductCommandBuilder setQuantity(int quantity){
         this.quantity = quantity;
         return this;
     }
