@@ -7,14 +7,14 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.Id;
 import pl.com.bottega.ecommerce.sales.application.api.command.AddProductCommand;
+import pl.com.bottega.ecommerce.sales.application.api.command.AddProductCommandBuilder;
 import pl.com.bottega.ecommerce.sales.domain.client.Client;
-import pl.com.bottega.ecommerce.sales.domain.client.ClientRepository;
 import pl.com.bottega.ecommerce.sales.domain.equivalent.SuggestionService;
 import pl.com.bottega.ecommerce.sales.domain.productscatalog.Product;
 import pl.com.bottega.ecommerce.sales.domain.productscatalog.ProductRepository;
 import pl.com.bottega.ecommerce.sales.domain.reservation.Reservation;
 import pl.com.bottega.ecommerce.sales.domain.reservation.ReservationRepository;
-import pl.com.bottega.ecommerce.system.application.SystemContext;
+
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -26,14 +26,17 @@ public class AddProductCommandHandlerTest {
     private ReservationRepository reservationRepository;
     private ProductRepository productRepository;
     private SuggestionService suggestionService;
-    private ClientRepository clientRepository;
-    private SystemContext systemContext;
     private Product product;
     private Reservation reservation;
     private Client client;
 
     @Before public void setup() {
         addProductCommand = new AddProductCommand(new Id("1"), new Id("1"), 7);
+        AddProductCommandBuilder addProductCommandBuilder = new AddProductCommandBuilder();
+        addProductCommandBuilder.withOrderId(new Id("1"));
+        addProductCommandBuilder.withProductId(new Id("1"));
+        addProductCommandBuilder.withQuantity(5);
+        addProductCommand = addProductCommandBuilder.build();
 
         reservation = mock(Reservation.class);
 
@@ -46,12 +49,14 @@ public class AddProductCommandHandlerTest {
         productRepository = mock(ProductRepository.class);
         when(productRepository.load(any())).thenReturn(product);
 
-        systemContext = mock(SystemContext.class);
-
         suggestionService = mock(SuggestionService.class);
         when(suggestionService.suggestEquivalent(product,client)).thenReturn(product);
 
-        addProductCommandHandler = new AddProductCommandHandler(reservationRepository, productRepository, suggestionService, clientRepository, systemContext);
+        AddProductCommandHandlerBuilder addProductCommandHandlerBuilder = new AddProductCommandHandlerBuilder();
+        addProductCommandHandlerBuilder.setReservationRepository(reservationRepository);
+        addProductCommandHandlerBuilder.setProductRepository(productRepository);
+        addProductCommandHandlerBuilder.setSuggestionService(suggestionService);
+        addProductCommandHandler = addProductCommandHandlerBuilder.createAddProductCommandHandler();
     }
 
     @Test public void reservationRepositoryLoadShouldBeCalledTwoTimes() {
