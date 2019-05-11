@@ -8,12 +8,10 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.ClientData;
 import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.Id;
-import pl.com.bottega.ecommerce.sales.domain.productscatalog.Product;
 import pl.com.bottega.ecommerce.sales.domain.productscatalog.ProductData;
+import pl.com.bottega.ecommerce.sales.domain.productscatalog.ProductDataBuilder;
 import pl.com.bottega.ecommerce.sales.domain.productscatalog.ProductType;
 import pl.com.bottega.ecommerce.sharedkernel.Money;
-
-import java.util.Date;
 
 import static org.mockito.Mockito.*;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -29,13 +27,13 @@ public class BookKeeperTest {
     private InvoiceFactory invoiceFactory;
     private TaxPolicy taxPolicy;
     private RequestItem requestItem;
-    private Product product;
+    private ProductDataBuilder productDataBuilder;
 
     @Before public void setup(){
         invoiceFactory = mock(InvoiceFactory.class);
         bookKeeper = new BookKeeper(new InvoiceFactory());
-        product = new Product(Id.generate(), new Money(1), "Temp", ProductType.FOOD);
-        productData = product.generateSnapshot();
+        productDataBuilder = new ProductDataBuilder();
+        productData = productDataBuilder.withType(ProductType.FOOD).build();
         clientData = new ClientData(Id.generate(), "Ciosek");
         invoiceRequest = new InvoiceRequest(clientData);
         taxPolicy = mock(TaxPolicy.class);
@@ -95,15 +93,12 @@ public class BookKeeperTest {
         when(taxPolicy.calculateTax(ProductType.STANDARD, money)).thenReturn(new Tax(money, "23%"));
         when(taxPolicy.calculateTax(ProductType.FOOD, money)).thenReturn(new Tax(money, "46%"));
 
-        requestItem = new RequestItem(product.generateSnapshot(), 2, money);
+        requestItem = new RequestItem(productData, 2, money);
         invoiceRequest.add(requestItem);
 
-
-        product = new Product(Id.generate(), new Money(1), "Temp", ProductType.STANDARD);
-
-        requestItem = new RequestItem(product.generateSnapshot(), 5, money);
+        productData = productDataBuilder.withType(ProductType.STANDARD).build();
+        requestItem = new RequestItem(productData, 5, money);
         invoiceRequest.add(requestItem);
-
 
         bookKeeper.issuance(invoiceRequest, taxPolicy);
 
